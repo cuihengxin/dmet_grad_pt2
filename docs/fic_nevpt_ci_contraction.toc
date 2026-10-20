@@ -1,0 +1,15 @@
+\contentsline {section}{\numberline {1}优化的是梯度的哪一部分}{2}{section.1}%
+\contentsline {section}{\numberline {2}旧实现：逐 CI 单位向量求过渡 RDM}{2}{section.2}%
+\contentsline {section}{\numberline {3}从正常序 RDM 到湮灭后的 CI 向量}{3}{section.3}%
+\contentsline {section}{\numberline {4}自旋分块和反对称轨道组合压缩}{3}{section.4}%
+\contentsline {subsection}{\numberline {4.1}稀疏湮灭算符}{3}{subsection.4.1}%
+\contentsline {section}{\numberline {5}直接计算整个 CI 源项}{4}{section.5}%
+\contentsline {subsection}{\numberline {5.1}与 NEVPT2 代码的对应}{4}{subsection.5.1}%
+\contentsline {section}{\numberline {6}如何切换并保留旧实现}{4}{section.6}%
+\contentsline {section}{\numberline {7}测试条件和结果一致性}{5}{section.7}%
+\contentsline {subsection}{\numberline {7.1}前后耗时}{6}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}为什么完整梯度加速小于源项加速}{7}{subsection.7.2}%
+\contentsline {section}{\numberline {8}完整结构优化前后对照}{7}{section.8}%
+\contentsline {section}{\numberline {9}时间和内存标度仍有哪些限制}{7}{section.9}%
+\contentsline {section}{\numberline {10}复现、回归与适用边界}{8}{section.10}%
+\contentsline {section}{\numberline {11}学习时建议核对的三件事}{8}{section.11}%

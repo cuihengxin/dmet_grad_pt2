@@ -66,7 +66,13 @@ def grad(nevpt_grad, atmlst, pre_kernel=False):
         return g
 
 class Gradients(mcpdft.Gradients):
+    # 'legacy' preserves the original source algorithm for checks/benchmarks.
+    ci_response_backend = 'contracted'
+    ci_response_stats = None
+
     _keys = ['verbose', 'mol', 'nevpt', 'base', 'max_memory', 'mc', 'canonstep', 'unit', 'atmlst', 'de', 'classes', 'excluded_classes', 'state', 'e_mcscf', 'weights', 'nroots', 'ngorb', 'spin_states', 'na_states', 'nb_states', 'nci', 'nlag', 'level_shift', 'conv_atol', 'conv_rtol', 'max_cycle', '_t1', 'c', 'a', 'e', 'mo_energy', 'h1eff', 'v2e', 'rdms', 'rdm1', 'rdm2', 'rdm1e']
+
+    _keys = _keys + ['ci_response_backend', 'ci_response_stats']
 
     def __init__(self, nevpt):
         self.verbose = nevpt.verbose
@@ -135,14 +141,9 @@ class Gradients(mcpdft.Gradients):
         self.rdm1e = np.zeros([self.nevpt.nmo]*2)
         self.eris = self.nevpt.eris
 
-    def get_wfn_response(self, **kwargs):
-        mol = self.mol
+    def get_ci_response_legacy(self):
+        """Original CI-unit-vector / transition-RDM implementation, retained verbatim."""
         nevpt = self.nevpt
-        nmo = nevpt.nmo
-        ncore = nevpt.ncore
-        c = self.c
-        a = self.a
-
         state_ci = nevpt.state_ci
         gci = np.zeros_like(state_ci)
         state_ci0 = np.zeros_like(state_ci)
@@ -166,6 +167,47 @@ class Gradients(mcpdft.Gradients):
             if np.sum(nevpt.nelecas) > 1:
                 gci.flat[idx] += einsum('XYZWxyzw,XYZWxyzw', self.rdms.ccccaaaa, tran_rdms.ccccaaaa)
             state_ci0.flat[idx] = 0.0
+        return gci
+
+    def get_ci_response_contracted(self):
+        """Exact contracted operator action; no per-CI transition 4-RDMs."""
+        from .ci_contraction import contract_rdm_weights
+        nevpt = self.nevpt
+        weights = [getattr(self.rdms, name) for name in
+                   ('ca', 'ccaa', 'cccaaa', 'ccccaaaa')]
+        available = max(0.0, self.max_memory - lib.current_memory()[0])
+        result, stats = contract_rdm_weights(weights, nevpt.state_ci,
+            nevpt.ncas, nevpt.nelecas, max_memory=available)
+        self.ci_response_stats = stats
+        return result
+
+    def get_ci_response(self):
+        """Dispatch only the RDM-weight CI source; later response terms are shared."""
+        import time
+        start = time.perf_counter()
+        if self.ci_response_backend == 'legacy':
+            result = self.get_ci_response_legacy()
+            self.ci_response_stats = dict(
+                transition_rdm_calls=self.nevpt.state_ci.size, spin_blocks=0)
+        elif self.ci_response_backend == 'contracted':
+            result = self.get_ci_response_contracted()
+        else:
+            raise ValueError('Unknown CI response backend: %s' % self.ci_response_backend)
+        self.ci_response_stats.update(backend=self.ci_response_backend,
+                                     seconds=time.perf_counter() - start)
+        self.nevpt.log.debug('CI response source: %s', self.ci_response_stats)
+        return result
+
+    def get_wfn_response(self, **kwargs):
+        mol = self.mol
+        nevpt = self.nevpt
+        nmo = nevpt.nmo
+        ncore = nevpt.ncore
+        c = self.c
+        a = self.a
+
+        state_ci = nevpt.state_ci
+        gci = self.get_ci_response()
     
         D = np.zeros((nmo,nmo))
         D[c,c] = 2 * np.eye(ncore)

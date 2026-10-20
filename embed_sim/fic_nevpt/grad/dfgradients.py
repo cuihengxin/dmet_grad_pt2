@@ -79,6 +79,8 @@ def grad(nevpt_grad, atmlst, pre_kernel=False):
 class DFGradients(Gradients):
     _keys = ['verbose', 'mol', 'nevpt', 'base', 'max_memory', 'mc', 'with_df', 'canonstep', 'auxbasis_response', 'unit', 'atmlst', 'de', 'classes', 'excluded_classes', 'state', 'e_mcscf', 'weights', 'nroots', 'ngorb', 'spin_states', 'na_states', 'nb_states', 'nci', 'nlag', 'level_shift', 'conv_atol', 'conv_rtol', 'max_cycle', '_t1', 'c', 'a', 'e', 'mo_energy', 'h1eff', 'v2e', 'rdms', 'rdm1', 'rdm2', 'rdm1e']
 
+    _keys = _keys + ['ci_response_backend', 'ci_response_stats']
+
     def __init__(self, nevpt):
         self.with_df = getattr(nevpt, 'with_df', None)
         if self.with_df is None:
@@ -150,14 +152,9 @@ class DFGradients(Gradients):
         self.rdm1e = np.zeros([self.nevpt.nmo]*2)
         self.eris = self.nevpt.eris
 
-    def get_wfn_response(self, **kwargs):
-        mol = self.mol
+    def get_ci_response_legacy(self):
+        """Original CI-unit-vector / transition-RDM implementation, retained verbatim."""
         nevpt = self.nevpt
-        nmo = nevpt.nmo
-        ncore = nevpt.ncore
-        c = self.c
-        a = self.a
-
         state_ci = nevpt.state_ci
         gci = np.zeros_like(state_ci)
         state_ci0 = np.zeros_like(state_ci)
@@ -181,6 +178,18 @@ class DFGradients(Gradients):
             if np.sum(nevpt.nelecas) > 1:
                 gci.flat[idx] += einsum('XYZWxyzw,XYZWxyzw', self.rdms.ccccaaaa, tran_rdms.ccccaaaa)
             state_ci0.flat[idx] = 0.0
+        return gci
+
+    def get_wfn_response(self, **kwargs):
+        mol = self.mol
+        nevpt = self.nevpt
+        nmo = nevpt.nmo
+        ncore = nevpt.ncore
+        c = self.c
+        a = self.a
+
+        state_ci = nevpt.state_ci
+        gci = self.get_ci_response()
     
         D = np.zeros((nmo,nmo))
         D[c,c] = 2 * np.eye(ncore)
