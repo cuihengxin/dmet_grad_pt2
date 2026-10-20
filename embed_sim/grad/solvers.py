@@ -778,6 +778,10 @@ def NEVPT(es_mf, solver_option, log=None):
         log = logger.new_logger(es_mf, es_mf.verbose)
     t0 = (logger.process_clock(), logger.perf_counter())
 
+    ci_response_backend = solver_option.get('ci_response_backend', 'contracted')
+    if ci_response_backend not in ('legacy', 'contracted'):
+        raise ValueError('Unknown CI response backend: %s' % ci_response_backend)
+
     ncas = solver_option['ncas']
     nelec = solver_option['nelec']
     state = solver_option.get('state', None)
@@ -802,7 +806,9 @@ def NEVPT(es_mf, solver_option, log=None):
     es_ene = es_solver.e_tot
     t0 = log.timer(f'embedded space FIC-NEVPT2', *t0)
 
-    es_relaxed_rdm1, es_relaxed_rdm2, es_relaxed_X = es_solver.Gradients().kernel()
+    es_grad = es_solver.Gradients()
+    es_grad.ci_response_backend = ci_response_backend
+    es_relaxed_rdm1, es_relaxed_rdm2, es_relaxed_X = es_grad.kernel()
 
     t0 = log.timer(f'embedded space FIC-NEVPT2 intermediates', *t0)
     return es_solver, es_ene, es_relaxed_rdm1, es_relaxed_rdm2, es_relaxed_X
