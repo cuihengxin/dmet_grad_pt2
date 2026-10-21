@@ -1,0 +1,49 @@
+
+******** <class 'embed_sim.aodmet.AODMET'> ********
+DMET from ROHF
+fix_spin parameter 0.5 on spin multiplicity 3
+Traceback (most recent call last):
+  File "/lustre/home/2501110357/04grad/dmet_grad_pt2/tests/check_single_root_gradient.py", line 128, in <module>
+    main()
+  File "/lustre/home/2501110357/04grad/dmet_grad_pt2/tests/check_single_root_gradient.py", line 85, in main
+    evaluate()
+  File "/lustre/home/2501110357/04grad/dmet_grad_pt2/tests/check_single_root_gradient.py", line 77, in evaluate
+    de, energy = grad.kernel()
+                 ^^^^^^^^^^^^^
+  File "/lustre/home/2501110357/04grad/dmet_grad_pt2/embed_sim/grad/aodmet.py", line 374, in kernel
+    de, e, es_solver = self.grad_elec(atmlst)
+                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/lustre/home/2501110357/04grad/dmet_grad_pt2/embed_sim/grad/aodmet.py", line 309, in grad_elec
+    es_solver, es_ene, es_relaxed_rdm1, es_relaxed_rdm2, es_relaxed_X = get_es_imds(es_mf, solver_option, log)
+                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/lustre/home/2501110357/04grad/dmet_grad_pt2/embed_sim/grad/ssdmet.py", line 35, in get_es_imds
+    es_solver, es_ene, es_relaxed_rdm1, es_relaxed_rdm2, es_relaxed_X = solvers.NEVPT(es_mf, solver_option, log)
+                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/lustre/home/2501110357/04grad/dmet_grad_pt2/embed_sim/grad/solvers.py", line 813, in NEVPT
+    es_relaxed_rdm1, es_relaxed_rdm2, es_relaxed_X = es_grad.kernel()
+                                                     ^^^^^^^^^^^^^^^^
+  File "/lustre/home/2501110357/04grad/dmet_grad_pt2/embed_sim/dmet_nevpt/grad/gradients.py", line 559, in kernel
+    self.de = self.grad(atmlst=atmlst)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/lustre/home/2501110357/04grad/dmet_grad_pt2/embed_sim/dmet_nevpt/grad/gradients.py", line 566, in grad
+    return grad(self, atmlst)
+           ^^^^^^^^^^^^^^^^^^
+  File "/lustre/home/2501110357/04grad/dmet_grad_pt2/embed_sim/dmet_nevpt/grad/gradients.py", line 109, in grad
+    converged, Lvec = nevpt_grad.solve_lagrange(mo=nevpt.mo, ci=nevpt.ci, eris=nevpt.eris)[:2]
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/lustre/home/2501110357/04grad/dmet_grad_pt2/tests/check_single_root_gradient.py", line 31, in checked_solve
+    result = base_solve(grad, *a, **kw)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/lustre/home/2501110357/.local/lib/python3.12/site-packages/pyscf/grad/lagrange.py", line 114, in solve_lagrange
+    Aop, Adiag = self.get_Aop_Adiag (**kwargs)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/lustre/home/2501110357/.local/lib/python3.12/site-packages/pyscf/grad/sacasscf.py", line 625, in get_Aop_Adiag
+    Aop, Adiag = newton_casscf.gen_g_hop (fcasscf, mo, ci, eris, verbose)[2:]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/lustre/home/2501110357/.local/lib/python3.12/site-packages/pyscf/mcscf/newton_casscf.py", line 125, in gen_g_hop
+    ci0, _Hci, _Hdiag, linkstrl, linkstr, _pack_ci, _unpack_ci = _pack_ci_get_H (casscf, mo, ci0)
+                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/lustre/home/2501110357/.local/lib/python3.12/site-packages/pyscf/mcscf/newton_casscf.py", line 44, in _pack_ci_get_H
+    ci0 = [ci0.ravel ()]
+           ^^^^^^^^^
+AttributeError: 'list' object has no attribute 'ravel'

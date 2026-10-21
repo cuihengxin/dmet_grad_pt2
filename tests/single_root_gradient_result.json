@@ -1,0 +1,26 @@
+{
+  "single_root_energy": -7.765998403343934,
+  "finite_differences": [
+    {
+      "step_bohr": 0.001,
+      "analytic": 0.02757676490832639,
+      "numerical": 0.02757678177500722,
+      "error": 1.6866680829785707e-08
+    },
+    {
+      "step_bohr": 0.0005,
+      "analytic": 0.02757676490832639,
+      "numerical": 0.027576769118908828,
+      "error": 4.210582438268773e-09
+    }
+  ],
+  "legacy_contracted_gradient_max_difference": 8.401053096241687e-26,
+  "multiroot_gradient_max_difference": 0.0,
+  "sextet": {
+    "energy": -3.023352209318155,
+    "analytic": 0.1656403398559413,
+    "numerical": 0.16564033515997778,
+    "error": 4.695963506939904e-09
+  },
+  "converged_response_solves": 5
+}

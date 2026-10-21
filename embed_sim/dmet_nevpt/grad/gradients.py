@@ -424,7 +424,47 @@ class Gradients(mcpdft.Gradients):
         bvec += self.mc.Gradients().get_wfn_response(state=self.state, mo=nevpt.mo, ci=nevpt.ci)
         return bvec
 
+    def get_Aop_Adiag(self, atmlst=None, state=None, verbose=None,
+                      mo=None, ci=None, eris=None, level_shift=None, **kwargs):
+        # PySCF's single-root Newton entry expects an array even when the
+        # SA/mix reference stores its sole root in a list. Keep the list for
+        # our root-wise projections and adapt only the Newton call boundary.
+        if self.nroots != 1:
+            return super().get_Aop_Adiag(
+                atmlst=atmlst, state=state, verbose=verbose, mo=mo,
+                ci=ci, eris=eris, level_shift=level_shift, **kwargs)
+        from pyscf.mcscf import newton_casscf
+        if state is None:
+            state = self.state
+        if verbose is None:
+            verbose = self.verbose
+        if mo is None:
+            mo = self.nevpt.mo
+        if ci is None:
+            ci = self.nevpt.ci
+        if isinstance(ci, (list, tuple)):
+            if len(ci) != 1:
+                raise ValueError('Single-root response requires one CI vector')
+            ci_roots = list(ci)
+        else:
+            ci_roots = [ci]
+        if eris is None:
+            eris = self.eris
+            if eris is None:
+                eris = self.eris = self.base.ao2mo(mo)
+        fcasscf = self.make_fcasscf_sa()
+        if fcasscf.fcisolver.nroots != 1:
+            raise ValueError('Inconsistent single-root Hessian solver')
+        Aop, Adiag = newton_casscf.gen_g_hop(
+            fcasscf, mo, ci_roots[0], eris, verbose)[2:]
+        return self.project_Aop(Aop, ci_roots, state), Adiag
+
     def project_Aop(self, Aop, ci, state):
+        # The inherited MC-PDFT projection also expects an array for one root.
+        if self.nroots == 1 and isinstance(ci, (list, tuple)):
+            if len(ci) != 1:
+                raise ValueError('Single-root projection requires one CI vector')
+            ci = ci[0]
         Aop = super().project_Aop(Aop, ci, state)
         def my_Aop(x):
             projected_x = self._project_hessian_vector(x)

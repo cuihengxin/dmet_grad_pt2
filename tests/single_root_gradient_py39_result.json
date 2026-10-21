@@ -1,0 +1,27 @@
+{
+  "single_root_energy": -7.7659984033439375,
+  "finite_differences": [
+    {
+      "step_bohr": 0.001,
+      "analytic": 0.027576764908326223,
+      "numerical": 0.027576781778559933,
+      "error": 1.687023370999796e-08
+    },
+    {
+      "step_bohr": 0.0005,
+      "analytic": 0.027576764908326223,
+      "numerical": 0.0275767691242379,
+      "error": 4.215911675320427e-09
+    }
+  ],
+  "legacy_contracted_gradient_max_difference": 1.3344749725953142e-24,
+  "multiroot_gradient_max_difference": 0.0,
+  "sextet": {
+    "energy": -3.0233522093181477,
+    "analytic": 0.1656403397045776,
+    "numerical": 0.16564033515642507,
+    "error": 4.548152521266502e-09
+  },
+  "converged_response_solves": 5,
+  "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]"
+}
