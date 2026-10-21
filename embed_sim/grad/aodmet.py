@@ -287,6 +287,8 @@ from pyscf.lib import logger
 def grad_elec(mydmet_grad, atmlst=None):
     mydmet = mydmet_grad.base
     solver_option = mydmet_grad.solver_option
+    from embed_sim.grad.guess import prepare_options
+    solver_option = prepare_options(mydmet, solver_option)
     mf = mydmet.mf_or_cas
     mo_coeff = mf.mo_coeff
     mol = mydmet.mol
@@ -373,6 +375,9 @@ class AODMET_Gradients(GradientsBase):
         self.de = de + self.grad_nuc(atmlst=atmlst)
         self.e = e
         self.es_solver = es_solver
+        cache = self.solver_option.get('guess_cache')
+        if cache is not None:
+            cache.update(self.base, es_solver, self.solver_option)
         logger.timer(self, 'DMET gradients', *cput0)
         self._finalize()
         return self.de, self.e

@@ -98,7 +98,7 @@ def SA_CASSCF(es_mf, solver_option, log=None):
     es_solver = sacasscf_mixer.sacasscf_mixer(es_mf, ncas, nelec, statelis)
     es_solver.conv_tol = conv_tol
     es_solver.max_cycle = max_cycle
-    es_solver.kernel(es_mo)
+    es_solver.kernel(es_mo, ci0=solver_option.get('ci0'))
     t0 = log.timer(f'embedded space SA-CASSCF', *t0)
 
     if state is None:
@@ -407,9 +407,9 @@ def CASSCF(es_mf, solver_option, log=None):
     es_solver.conv_tol = conv_tol
     es_solver.max_cycle = max_cycle
     if 'mc2step' in solver_option.keys() and solver_option['mc2step']:
-        es_solver.mc2step(es_mo)
+        es_solver.mc2step(es_mo, ci0=solver_option.get('ci0'))
     else:
-        es_solver.kernel(es_mo)
+        es_solver.kernel(es_mo, ci0=solver_option.get('ci0'))
     t0 = log.timer(f'embedded space CASSCF', *t0)
     
     es_relaxed_rdm1_act, es_relaxed_rdm2_act = es_solver.fcisolver.make_rdm12(es_solver.ci,es_solver.ncas,es_solver.nelecas)
@@ -797,9 +797,9 @@ def NEVPT(es_mf, solver_option, log=None):
     es_cas.conv_tol = conv_tol
     es_cas.max_cycle = max_cycle
     if 'mc2step' in solver_option.keys() and solver_option['mc2step']:
-        es_cas.mc2step(es_mo)
+        es_cas.mc2step(es_mo, ci0=solver_option.get('ci0'))
     else:
-        es_cas.kernel(es_mo)
+        es_cas.kernel(es_mo, ci0=solver_option.get('ci0'))
 
     es_solver = dmet_NEVPT(es_cas, state=state, canonstep=canonstep, overlap_threshold=overlap_threshold, classes=classes)
     es_solver.kernel()

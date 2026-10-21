@@ -522,7 +522,99 @@ class SSDMET(lib.StreamObject):
 
         es_mo = reduce(lib.dot, (self.es_orb.T.conj(), self.mol.intor_symmetric('int1e_ovlp'), mo[:, self.nfo: self.nfo+self.nes]))
         return ncas, nelec, es_mo 
-    
+    def avas_export(self, aolabels, *args, **kwargs):
+        """AVAS with orbital analysis + molden export for visualization.
+
+        Same as avas(), but additionally:
+        - Prints mapping: AVAS active index -> original ROHF MO index
+        - Exports _avas_full.molden (all MOs in AVAS order, correct occ)
+        - Exports _avas_active.molden (only active MOs, correct occ)
+
+        Open _avas_full.molden to see active orbitals at their real MO indices.
+        """
+        from embed_sim import myavas
+        total_mf = self.total_mf()
+        total_mf.mo_occ = round_off_occ(total_mf.mo_occ)
+
+        threshold = kwargs.pop('threshold', 0.5)
+        avas_obj = myavas.AVAS(total_mf, aolabels, ncore=self.nfo, nunocc=self.nfv,
+                               threshold=threshold, canonicalize=False, *args, **kwargs)
+        ncas, nelec, mo = avas_obj.kernel()
+
+        # AVAS mo ordering: [frozen_core | mocore | mocas | movir | frozen_virt]
+        ncore = self.nfo
+        nocc_total = int(np.sum(total_mf.mo_occ > 0))
+        ncas_occ = int(np.sum(avas_obj.occ_weights >= threshold))
+        n_inactive_occ = nocc_total - ncore - ncas_occ
+        active_start = ncore + n_inactive_occ
+        active_end = active_start + ncas
+        avas_active = mo[:, active_start:active_end]
+
+        self.log.info("AVAS: ncore=%d, nocc_total=%d, ncas_occ=%d",
+                      ncore, nocc_total, ncas_occ)
+        self.log.info("AVAS: n_inactive_occ(mocore)=%d, ncas=%d, nelec=%d",
+                      n_inactive_occ, ncas, nelec)
+
+        # --- overlap with original ROHF MOs ---
+        ovlp_ao = self.mol.intor_symmetric('int1e_ovlp')
+        rohf_mo = self.mf_or_cas.mo_coeff
+        rohf_mo_occ = self.mf_or_cas.mo_occ
+        if isinstance(rohf_mo, (list, tuple)):
+            rohf_mo = rohf_mo[0]
+            rohf_mo_occ = rohf_mo_occ[0]
+        overlap_rohf = reduce(lib.dot, (avas_active.T.conj(), ovlp_ao, rohf_mo))
+
+        # AVAS eigenvalues per active orbital
+        occ_w = avas_obj.occ_weights[avas_obj.occ_weights >= threshold]
+        vir_w = avas_obj.vir_weights[avas_obj.vir_weights >= threshold]
+        active_eigs = np.hstack([occ_w, vir_w])
+
+        rohf_alpha_occ = np.minimum(rohf_mo_occ, 1.0)
+        rohf_beta_occ = rohf_mo_occ - rohf_alpha_occ
+
+        # --- mapping table ---
+        self.log.info("AVAS: --- Active -> ROHF canonical MO mapping ---")
+        self.log.info("AVAS: %4s  %8s  %8s  %10s  %10s  %6s  %6s",
+                      "idx", "ROHF_MO", "overlap", "eig", "pop(a/b)", "occ_a", "occ_b")
+        occ_active = np.zeros(ncas)
+        for i in range(ncas):
+            overlaps = np.abs(overlap_rohf[i])
+            sorted_idx = np.argsort(overlaps)[::-1]
+            best = sorted_idx[0]
+            alpha_pop = np.dot(overlaps**2, rohf_alpha_occ)
+            beta_pop = np.dot(overlaps**2, rohf_beta_occ)
+            occ_active[i] = np.dot(overlaps**2, rohf_mo_occ)
+            self.log.info("AVAS: %4d  %8d  %8.4f  %10.4f  %6.2f/%-6.2f %6s  %6s",
+                          i, best, overlaps[best], active_eigs[i],
+                          alpha_pop, beta_pop,
+                          "occ" if rohf_mo_occ[best] >= 2 else ("1" if rohf_mo_occ[best] >= 1 else "0"),
+                          "occ" if rohf_mo_occ[best] >= 2 else ("1" if rohf_mo_occ[best] >= 1 else "0"))
+            others = [f"MO#{j}({overlaps[j]:.3f})" for j in sorted_idx[1:4] if overlaps[j] > 0.1]
+            if others:
+                self.log.info("AVAS:         also: %s", ", ".join(others))
+        occ_active = np.round(occ_active)
+
+        # --- occupations for FULL AVAS-reordered MO matrix ---
+        s_full = reduce(lib.dot, (mo.T.conj(), ovlp_ao, total_mf.mo_coeff))
+        nmo = mo.shape[1]
+        mo_occ_full = np.zeros(nmo)
+        for i in range(nmo):
+            overlaps_i = np.abs(s_full[i])
+            mo_occ_full[i] = np.dot(overlaps_i**2, total_mf.mo_occ)
+        mo_occ_full = np.round(mo_occ_full)
+
+        # --- export molden ---
+        from pyscf import tools
+        tools.molden.from_mo(self.mol, self.title+'_avas_full.molden', mo, occ=mo_occ_full)
+        tools.molden.from_mo(self.mol, self.title+'_avas_active.molden', avas_active, occ=occ_active)
+        self.log.info("AVAS: exported %s_avas_full.molden  (all %d MOs, active=MO#%d-%d 1-indexed, occ=%s)",
+                      self.title, nmo, active_start+1, active_end, occ_active.tolist())
+        self.log.info("AVAS: exported %s_avas_active.molden (%d active MOs only)",
+                      self.title, ncas)
+
+        es_mo = reduce(lib.dot, (self.es_orb.T.conj(), ovlp_ao,
+                                  mo[:, self.nfo: self.nfo+self.nes]))
+        return ncas, nelec, es_mo        
     def total_mf(self):
         if isinstance(self.mf_or_cas, cahf.CAHF):
             total_mf = cahf.CAHF(self.mol,ncas=self.mf_or_cas.ncas,nelecas=self.mf_or_cas.nelecas,spin=self.mf_or_cas.spin).x2c()
