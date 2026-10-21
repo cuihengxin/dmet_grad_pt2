@@ -711,7 +711,9 @@ def _rdm2_mo2ao(nevpt, d2, mo_coeff, fsave=None):
     max_memory = nevpt.max_memory - lib.current_memory()[0]
     blksize = int(max_memory*1e6/8/(nao_pair+nmo**2))
     blksize = min(nao_pair, max(ccsd.BLKMIN, blksize))
-    fswap.create_dataset('o', (nocc,ncas+nextern,nao_pair), 'f8', chunks=(nocc,min(nocc,ncas+nextern),blksize))
+    # HDF5 chunks are storage units, not the memory-sized compute blocks.
+    # Auto-chunking avoids the <4 GiB per-chunk limit at large max_memory.
+    fswap.create_dataset('o', (nocc,ncas+nextern,nao_pair), 'f8', chunks=True)
     
     for p0, p1 in lib.prange(0, ncas, nocc):
         buf1 = np.zeros((nocc,p1-p0,nocc,ncas+nextern))
@@ -739,7 +741,7 @@ def _rdm2_mo2ao(nevpt, d2, mo_coeff, fsave=None):
     time1 = log.timer_debug1('_rdm2_mo2ao pass 2', *time1)
     buf1 = None
 
-    gsave = fsave.create_dataset('dm2', (nao_pair,nao_pair), 'f8', chunks=(blksize,blksize))
+    gsave = fsave.create_dataset('dm2', (nao_pair,nao_pair), 'f8', chunks=True)
     for p0, p1 in lib.prange(0, nao_pair, blksize):
         buf1 = _cp(fswap['o'][:,:,p0:p1].transpose(2,0,1).reshape(p1-p0,-1))
         buf2 = _trans(buf1, (0,nocc,ncore,nmo))

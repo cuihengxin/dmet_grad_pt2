@@ -1,0 +1,28 @@
+Production solver: /lustre/home/2501110357/04grad/dmet_grad_pt2/embed_sim/grad/solvers.py
+
+******** <class 'embed_sim.aodmet.AODMET'> ********
+DMET from ROHF
+mol.max_memory = 1536 MB
+mf.max_memory = 1536 MB
+scanner.max_memory = 1536 MB
+DMET.max_memory = 1536 MB
+ES-SCF.max_memory = 1536 MB
+H6/STO-3G: AO=6, embedding=6, mode=initial
+fix_spin parameter 0.5 on spin multiplicity 1
+budget: ES-SCF=1536, ES-mol=4000, NEVPT=1536, gradient=1536 MB
+CI contraction: remaining=1422.22 MB, current RSS=113.78 MB
+PASS: 1536 MB reached NEVPT, gradient, and contracted CI; E=-7.276016005958
+
+******** <class 'embed_sim.aodmet.AODMET'> ********
+DMET from ROHF
+mol.max_memory = 6144 MB
+mf.max_memory = 6144 MB
+scanner.max_memory = 6144 MB
+DMET.max_memory = 6144 MB
+ES-SCF.max_memory = 6144 MB
+H6/STO-3G: AO=6, embedding=6, mode=initial
+fix_spin parameter 0.5 on spin multiplicity 1
+budget: ES-SCF=6144, ES-mol=4000, NEVPT=6144, gradient=6144 MB
+CI contraction: remaining=6025.19 MB, current RSS=118.81 MB
+PASS: 6144 MB reached NEVPT, gradient, and contracted CI; E=-7.276016005958
+ALL MEMORY PROPAGATION CHECKS PASSED

@@ -802,11 +802,13 @@ def NEVPT(es_mf, solver_option, log=None):
         es_cas.kernel(es_mo, ci0=solver_option.get('ci0'))
 
     es_solver = dmet_NEVPT(es_cas, state=state, canonstep=canonstep, overlap_threshold=overlap_threshold, classes=classes)
+    es_solver.max_memory = es_mf.max_memory
     es_solver.kernel()
     es_ene = es_solver.e_tot
     t0 = log.timer(f'embedded space FIC-NEVPT2', *t0)
 
     es_grad = es_solver.Gradients()
+    es_grad.max_memory = es_solver.max_memory
     es_grad.ci_response_backend = ci_response_backend
     es_relaxed_rdm1, es_relaxed_rdm2, es_relaxed_X = es_grad.kernel()
 
