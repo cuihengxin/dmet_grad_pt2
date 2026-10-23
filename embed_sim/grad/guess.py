@@ -27,7 +27,6 @@ def embedding_guess(basis, overlap, full_mo, total_ncore, ncore, ncas,
     w, v = np.linalg.eigh(metric)
     if np.min(w) <= tol:
         raise ValueError('New embedding metric is singular')
-    sqrt_s = (v * np.sqrt(w)) @ v.conj().T
     inv_sqrt_s = (v / np.sqrt(w)) @ v.conj().T
     targets = inv_sqrt_s @ basis.conj().T @ overlap @ full_mo
     active = targets[:, total_ncore:total_ncore+ncas]
@@ -43,14 +42,20 @@ def embedding_guess(basis, overlap, full_mo, total_ncore, ncore, ncas,
         raise ValueError('Previous CAS core space loses rank in new embedding')
     core = u[:, :ncore]
     occupied = np.column_stack((core, active))
-    # Complete with new reference MOs, removing occupied components.
-    virtual = sqrt_s @ reference
-    virtual -= occupied @ (occupied.conj().T @ virtual)
-    u, s, _ = np.linalg.svd(virtual, full_matrices=False)
-    nvirt = basis.shape[1] - ncore - ncas
-    if nvirt < 0 or (nvirt and (len(s) < nvirt or s[nvirt-1] <= tol)):
-        raise ValueError('Cannot complete embedded CAS orbitals')
-    return inv_sqrt_s @ np.column_stack((occupied, u[:, :nvirt]))
+    # Keep reference in the signature for compatibility with existing callers.
+    # Complete QR supplies the orthogonal complement without a rank-deficient
+    # virtual projection. Preserve the original core/active orbital gauge.
+    nocc = ncore + ncas
+    if nocc > basis.shape[1]:
+        raise ValueError('Occupied space exceeds embedding dimension')
+    if not np.isfinite(occupied).all():
+        raise ValueError('Non-finite occupied orbitals')
+    if not np.allclose(occupied.conj().T @ occupied, np.eye(nocc),
+                       atol=tol, rtol=0):
+        raise ValueError('Occupied orbitals are not orthonormal')
+    q, _ = np.linalg.qr(occupied, mode='complete')
+    virtual = q[:, nocc:]
+    return inv_sqrt_s @ np.column_stack((occupied, virtual))
 
 
 class CASGuessCache:

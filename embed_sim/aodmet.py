@@ -306,7 +306,8 @@ class AODMET(ssdmet.SSDMET):
         total_mf = self.total_mf()
         total_mf.mo_occ = round_off_occ(total_mf.mo_occ) # make 2/0 occupation to be int
         ncas, nelec, mo = myavas.avas(total_mf, aolabels, ncore=self.nfo, nunocc = self.nfv, canonicalize=False, *args, **kwargs) # canonicalize should be set to False, since it require orbital energy
-
+        from pyscf import tools 
+        tools.molden.from_mo(self.mol, self.title+'_avas_full.molden', mo)
         ldm, caolo, cloao = self.lowdin_orth()
         es_mo = reduce(lib.dot, (self.es_orb.T.conj(), cloao.T, cloao, mo[:, self.nfo: self.nfo+self.nes]))
         return ncas, nelec, es_mo

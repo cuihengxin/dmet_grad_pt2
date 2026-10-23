@@ -578,7 +578,8 @@ def get_grad_I(mydmet_grad, I1, I2, caolo_1, cloao_1, S_1_mo, log):
     t0 = log.timer('grad_I', *t0)
     return grad_I, W
 
-def gen_contract_Z_A(mf):
+def gen_contract_Z_A(mf, cache_static=True):
+    """Build the response; cache fixed J/K only within this orbital snapshot."""
     mo_coeff = mf.mo_coeff
     mo_occ = mf.mo_occ
     mol = mf.mol
@@ -595,6 +596,31 @@ def gen_contract_Z_A(mf):
         f, a, b = mf.frac, mf.alpha, mf.beta
     else:
         f, a, b = 0.5, 0.0, -2.0
+
+    fixed = None
+
+    def static_terms():
+        nonlocal fixed
+        if cache_static and fixed is not None:
+            return fixed
+        kappa_a = np.zeros((nmo,nmo))
+        kappa_b = np.zeros((nmo,nmo))
+        kappa_a[sd,sh] = kappa_a[sh,sd] = a*f**2
+        kappa_a[sh,sv] = kappa_a[sv,sh] = -a*f*(1-f)
+        kappa_b[sd,sh] = kappa_b[sh,sd] = b*f**2
+        kappa_b[sh,sv] = kappa_b[sv,sh] = -b*f*(1-f)
+        if nho > 0:
+            dmo = mo_coeff[:,sh] @ mo_coeff[:,sh].conj().T
+            vj, vk = mf.get_jk(mol, dmo, hermi=1)
+            J = mo_coeff.conj().T @ vj @ mo_coeff
+            K = mo_coeff.conj().T @ vk @ mo_coeff
+        else:
+            J = K = np.zeros((nmo,nmo))
+
+        result = kappa_a, kappa_b, J, K
+        if cache_static:
+            fixed = result
+        return result
 
     def contract_Z_A(Z):
         Z_hd = Z[:nho*ndo].reshape(nho,ndo)
@@ -627,19 +653,7 @@ def gen_contract_Z_A(mf):
         ZA[:,:nocc] += 2*va[:,:nocc]
         ZA[:,:ndo] += 2*vb[:,:ndo]
 
-        kappa_a = np.zeros((nmo,nmo))
-        kappa_b = np.zeros((nmo,nmo))
-        kappa_a[sd,sh] = kappa_a[sh,sd] = a*f**2
-        kappa_a[sh,sv] = kappa_a[sv,sh] = -a*f*(1-f)
-        kappa_b[sd,sh] = kappa_b[sh,sd] = b*f**2
-        kappa_b[sh,sv] = kappa_b[sv,sh] = -b*f*(1-f)
-        if nho > 0:
-            dmo = mo_coeff[:,sh] @ mo_coeff[:,sh].conj().T
-            vj, vk = mf.get_jk(mol, dmo, hermi=1)
-            J = mo_coeff.conj().T @ vj @ mo_coeff
-            K = mo_coeff.conj().T @ vk @ mo_coeff
-        else:
-            J = K = np.zeros((nmo,nmo))
+        kappa_a, kappa_b, J, K = static_terms()
 
         Zmat = np.zeros((nmo,nmo),dtype=Z.dtype)
         Zmat[sh,sd] = Z_hd
@@ -769,7 +783,16 @@ def get_grad_Z_vector(mf, atmlst, Z, H_1_mo, S_1_mo, contract_Z_A, get_indep_pai
     Zb[sv,sd] = 2*(1-f)*Z_vd
     Za = mo_coeff @ ((Za+Za.conj().T)*0.5) @ mo_coeff.conj().T
     Zb = mo_coeff @ ((Zb+Zb.conj().T)*0.5) @ mo_coeff.conj().T
-    dma, dmb = mf.make_rdm1()
+    dm = np.asarray(mf.make_rdm1())
+    if dm.ndim == 2:
+        # RHF returns the spin-summed density; each spin carries half.
+        if nho:
+            raise ValueError('Spin-summed density requires a closed-shell reference')
+        dma = dmb = dm * 0.5
+    elif dm.ndim == 3 and dm.shape[0] == 2:
+        dma, dmb = dm
+    else:
+        raise ValueError('Expected RHF density or two spin density matrices')
     cJ = np.array(
         [[2*f+2*a*f*(f-1), 2-2*f-2*a*f*(f-1)],
          [2*f+2*a*f**2, 2-2*f-2*a*f**2]]

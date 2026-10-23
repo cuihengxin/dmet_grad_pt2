@@ -1,0 +1,35 @@
+[
+  {
+    "label": "4\u4e2aH2\uff0c\u952e\u957f1.4 Bohr",
+    "source": "degenerate_correlated_h2_1.4_4.json",
+    "external_gap": 1.1772541368939216,
+    "degenerate_count": 4,
+    "old_gradient": -0.002603822868755712,
+    "new_gradient": -0.0026038228686402487,
+    "numerical": -0.0026037660454392153,
+    "old_error": 5.682331649659034e-08,
+    "new_error": 5.6823201033395776e-08
+  },
+  {
+    "label": "2\u4e2aLiF\uff0c\u952e\u957f5 Bohr",
+    "source": "degenerate_correlated_lif_core_5.0_2.json",
+    "external_gap": 1.3474841739047553e-05,
+    "degenerate_count": 4,
+    "old_gradient": -0.06637546606503397,
+    "new_gradient": -0.06640485877419433,
+    "numerical": -0.06640485850084588,
+    "old_error": 2.939243581190354e-05,
+    "new_error": 2.7334845498216964e-10
+  },
+  {
+    "label": "2\u4e2aLiF\uff0c\u952e\u957f6 Bohr",
+    "source": "degenerate_correlated_lif_core_6.0_2.json",
+    "external_gap": 4.754772643175636e-06,
+    "degenerate_count": 4,
+    "old_gradient": -0.052110013251880805,
+    "new_gradient": -0.052184533291630086,
+    "numerical": -0.05218453333100115,
+    "old_error": 7.452007912034375e-05,
+    "new_error": 3.937106196616469e-11
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "spec": {
+    "molecule": "LiF",
+    "basis": "sto-3g",
+    "bond": 8.0,
+    "imp_ao": 0,
+    "fragments": 2,
+    "threshold": 1e-10,
+    "scf_conv_tol": 1e-14,
+    "scf_conv_tol_grad": 1e-10,
+    "fci_conv_tol": 1e-14
+  },
+  "failure": "RuntimeError('SCF not converged')"
+}

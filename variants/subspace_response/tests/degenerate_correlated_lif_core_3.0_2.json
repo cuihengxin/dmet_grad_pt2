@@ -1,0 +1,361 @@
+{
+  "spec": {
+    "molecule": "LiF",
+    "basis": "sto-3g",
+    "bond": 3.0,
+    "imp_ao": 0,
+    "fragments": 2
+  },
+  "legacy": {
+    "energy": -210.72012512465727,
+    "gradient": [
+      [
+        8.177509832373439e-17,
+        1.7555999785433957e-12,
+        -0.06625529089047255
+      ],
+      [
+        5.474512313482994e-17,
+        -1.7555067642616162e-12,
+        -0.06625529089047033
+      ],
+      [
+        -7.837181091377397e-17,
+        4.549814985757659e-12,
+        0.06625529089047655
+      ],
+      [
+        -5.504500401164316e-17,
+        -4.549907095508475e-12,
+        0.06625529089047344
+      ]
+    ],
+    "seconds": 2.056841942947358,
+    "zvector": {
+      "solver": "gmres",
+      "warm_start": "disabled",
+      "initial_scaled_residual": 0.002583333874892755,
+      "scaled_residual": 1.3336211345372236e-12,
+      "raw_residual": 3.601657802119158e-12,
+      "residual_reused": false,
+      "recycle_active": false,
+      "recycle_setup_matvecs": 0,
+      "recycle_stored_dim": 0,
+      "recycle_extraction_seconds": 7.271301001310349e-07,
+      "contract_stats": {
+        "response_calls": 10,
+        "static_jk_calls": 0
+      },
+      "guess_mode": "previous",
+      "history_count": 0,
+      "history_rank": 0,
+      "history_weights": [],
+      "guess_matvecs": 0,
+      "relative_raw_residual": 9.737443312085188e-11,
+      "matvecs": 10,
+      "iterations": 8,
+      "seconds": 0.017155464040115476
+    },
+    "bath_occupations": [
+      7.252269847384649e-05,
+      7.252269847395612e-05,
+      2.1161493656894614,
+      2.116149365689463
+    ],
+    "bath_count": 4,
+    "bath_spread": 2.1160768429909895,
+    "external_gap": 7.252269847317804e-05,
+    "ncore": 8,
+    "ncas": 6,
+    "nelec": 8,
+    "degenerate_count": 4,
+    "degenerate_groups": [
+      [
+        0,
+        1
+      ],
+      [
+        2,
+        3
+      ]
+    ]
+  },
+  "subspace": {
+    "energy": -210.72012512465727,
+    "gradient": [
+      [
+        7.803502982630357e-17,
+        1.7555888790236548e-12,
+        -0.06625525554563216
+      ],
+      [
+        5.143546878621397e-17,
+        -1.7554855816616713e-12,
+        -0.06625525554562994
+      ],
+      [
+        -7.636646590253275e-17,
+        4.5498266002734315e-12,
+        0.06625525554563616
+      ],
+      [
+        -5.173513820030537e-17,
+        -4.549930975061324e-12,
+        0.06625525554563305
+      ]
+    ],
+    "seconds": 0.26659652311354876,
+    "zvector": {
+      "solver": "gmres",
+      "warm_start": "disabled",
+      "initial_scaled_residual": 0.0026004228643737135,
+      "scaled_residual": 1.3015648198382713e-12,
+      "raw_residual": 3.5133603561128765e-12,
+      "residual_reused": false,
+      "recycle_active": false,
+      "recycle_setup_matvecs": 0,
+      "recycle_stored_dim": 0,
+      "recycle_extraction_seconds": 6.32135197520256e-07,
+      "contract_stats": {
+        "response_calls": 10,
+        "static_jk_calls": 0
+      },
+      "guess_mode": "previous",
+      "history_count": 0,
+      "history_rank": 0,
+      "history_weights": [],
+      "guess_matvecs": 0,
+      "relative_raw_residual": 9.321750929042535e-11,
+      "matvecs": 10,
+      "iterations": 8,
+      "seconds": 0.015849684132263064
+    },
+    "bath_occupations": [
+      7.252269847384649e-05,
+      7.252269847395612e-05,
+      2.1161493656894614,
+      2.116149365689463
+    ],
+    "bath_count": 4,
+    "bath_spread": 2.1160768429909895,
+    "external_gap": 7.252269847317804e-05,
+    "ncore": 8,
+    "ncas": 6,
+    "nelec": 8,
+    "degenerate_count": 4,
+    "degenerate_groups": [
+      [
+        0,
+        1
+      ],
+      [
+        2,
+        3
+      ]
+    ]
+  },
+  "finite_differences": [
+    {
+      "axis": 2,
+      "step": 0.001,
+      "numerical": -0.06625519307590366,
+      "legacy_error": 9.781456888902085e-08,
+      "subspace_error": 6.246972850121324e-08,
+      "plus": {
+        "energy": -210.7201913294013,
+        "bath_occupations": [
+          7.252269846823596e-05,
+          7.255866999914379e-05,
+          2.1161476816717473,
+          2.116149365669583
+        ],
+        "bath_count": 4,
+        "bath_spread": 2.1160768429711148,
+        "external_gap": 7.252269846772595e-05,
+        "ncore": 8,
+        "ncas": 6,
+        "nelec": 8,
+        "degenerate_count": 0,
+        "degenerate_groups": []
+      },
+      "minus": {
+        "energy": -210.72005881901515,
+        "bath_occupations": [
+          7.248670888743147e-05,
+          7.252269840831621e-05,
+          2.116149365695055,
+          2.116151052435527
+        ],
+        "bath_count": 4,
+        "bath_spread": 2.1160785657266397,
+        "external_gap": 7.248670888698737e-05,
+        "ncore": 8,
+        "ncas": 6,
+        "nelec": 8,
+        "degenerate_count": 0,
+        "degenerate_groups": []
+      }
+    },
+    {
+      "axis": 2,
+      "step": 0.0005,
+      "numerical": -0.06625524000014593,
+      "legacy_error": 5.089032661942383e-08,
+      "subspace_error": 1.5545486231616223e-08,
+      "plus": {
+        "energy": -210.72015823966666,
+        "bath_occupations": [
+          7.252269845434812e-05,
+          7.254068647288836e-05,
+          2.1161485233333552,
+          2.1161493656757604
+        ],
+        "bath_count": 4,
+        "bath_spread": 2.1160768429773062,
+        "external_gap": 7.252269845417936e-05,
+        "ncore": 8,
+        "ncas": 6,
+        "nelec": 8,
+        "degenerate_count": 0,
+        "degenerate_groups": []
+      },
+      "minus": {
+        "energy": -210.72009198442666,
+        "bath_occupations": [
+          7.250470590764388e-05,
+          7.252269842507894e-05,
+          2.1161493656883015,
+          2.116150208716375
+        ],
+        "bath_count": 4,
+        "bath_spread": 2.1160777040104675,
+        "external_gap": 7.250470590711261e-05,
+        "ncore": 8,
+        "ncas": 6,
+        "nelec": 8,
+        "degenerate_count": 0,
+        "degenerate_groups": []
+      }
+    },
+    {
+      "axis": 0,
+      "step": 0.001,
+      "numerical": -4.263256414560601e-11,
+      "legacy_error": 4.2632645920704335e-11,
+      "subspace_error": 4.263264218063584e-11,
+      "plus": {
+        "energy": -210.72012511361683,
+        "bath_occupations": [
+          7.252269205232365e-05,
+          7.252269880704525e-05,
+          2.1161493656463715,
+          2.116149365997425
+        ],
+        "bath_count": 4,
+        "bath_spread": 2.1160768433053727,
+        "external_gap": 7.252269205114962e-05,
+        "ncore": 8,
+        "ncas": 6,
+        "nelec": 8,
+        "degenerate_count": 4,
+        "degenerate_groups": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "minus": {
+        "energy": -210.72012511361675,
+        "bath_occupations": [
+          7.252269205298844e-05,
+          7.252269880646261e-05,
+          2.1161493656463715,
+          2.116149365997426
+        ],
+        "bath_count": 4,
+        "bath_spread": 2.116076843305373,
+        "external_gap": 7.252269205273597e-05,
+        "ncore": 8,
+        "ncas": 6,
+        "nelec": 8,
+        "degenerate_count": 4,
+        "degenerate_groups": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "axis": 0,
+      "step": 0.0005,
+      "numerical": 2.0179413695586845e-09,
+      "legacy_error": 2.017941287783586e-09,
+      "subspace_error": 2.0179412915236546e-09,
+      "plus": {
+        "energy": -210.72012512189684,
+        "bath_occupations": [
+          7.252269685791514e-05,
+          7.252269858397774e-05,
+          2.1161493656783383,
+          2.116149365769605
+        ],
+        "bath_count": 4,
+        "bath_spread": 2.116076843072747,
+        "external_gap": 7.252269685742895e-05,
+        "ncore": 8,
+        "ncas": 6,
+        "nelec": 8,
+        "degenerate_count": 4,
+        "degenerate_groups": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "minus": {
+        "energy": -210.72012512189886,
+        "bath_occupations": [
+          7.252269692650188e-05,
+          7.252269845177906e-05,
+          2.116149365680691,
+          2.1161493657532437
+        ],
+        "bath_count": 4,
+        "bath_spread": 2.1160768430563173,
+        "external_gap": 7.252269692579779e-05,
+        "ncore": 8,
+        "ncas": 6,
+        "nelec": 8,
+        "degenerate_count": 4,
+        "degenerate_groups": [
+          [
+            0,
+            1
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      }
+    }
+  ],
+  "gradient_max_difference": 3.534484038780761e-08,
+  "completed": true
+}
