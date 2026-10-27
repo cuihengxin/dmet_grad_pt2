@@ -4,6 +4,7 @@ from functools import reduce
 import numpy as np
 import scipy
 from embed_sim import aodmet
+from embed_sim.grad._embedding_response import get_embedding_response
 from embed_sim.grad.ssdmet import (get_es_imds, gen_get_indep_pair_slice, get_S_1, get_H_1, group_indexes_by_diff, get_grad_dm1, get_grad_veff, get_grad_dm2, get_I, get_grad_X, gen_contract_Z_A, get_grad_Z_vector)
 
 from functools import partial
@@ -212,35 +213,12 @@ def get_grad_I(mydmet_grad, I1, I2, caolo_1, cloao_1, S_1_mo, log):
     core_vec_comp = orb_env[:,:nvir+nbath]
     core_vec = orb_env[:,nvir+nbath:]
     bath_vec = orb_env[:,nvir:nvir+nbath]
-    W_bath = occ_env[nvir:nvir+nbath][:,None] - occ_env[None,:]
-    W_bath[range(nbath),range(nvir,nvir+nbath)] = 1
-    nbath_degenerate = 0
-    bath_degenerate_groups = group_indexes_by_diff(occ_env[nvir:nvir+nbath], threshold=1e-8)[1]
-    for group in bath_degenerate_groups:
-        nbath_degenerate += len(group)
-    if mydmet_grad._perturb_anyway:
-        W_bath = W_bath/(W_bath**2 + mydmet_grad._perturbation)
-        W_bath[range(nbath),range(nvir,nvir+nbath)] = 0
-        W_core = (2-occ_env[:nvir+nbath])
-        W_core = W_core/(W_core**2 + mydmet_grad._perturbation)
-    else:
-        if nbath_degenerate > 0:
-            log.debug1(f'''
-    {nbath_degenerate} degenerate eigenvalues of bath orbitals are found, the gradients may be unreliable.
-    {mydmet_grad._perturbation} perturbation is added to the eigenvalues.
-    ''')
-            W_bath = W_bath/(W_bath**2 + mydmet_grad._perturbation)
-            W_bath[range(nbath),range(nvir,nvir+nbath)] = 0
-            W_core = (2-occ_env[:nvir+nbath])
-            W_core = W_core/(W_core**2 + mydmet_grad._perturbation)
-        else:
-            W_bath = 1/W_bath
-            W_bath[range(nbath),range(nvir,nvir+nbath)] = 0
-            W_core = 1/(2-occ_env[:nvir+nbath])
+    W_bath, W_core = get_embedding_response(mydmet_grad, occ_env, nvir, nbath, log)
+    core_index = "kj" if W_core.ndim == 2 else "k"
     grad_I1 = (
-        + einsum('uj,uv,k,mk,nj,vk,ns,Atms->At',
+        + einsum(f'uj,uv,{core_index},mk,nj,vk,ns,Atms->At',
                  I1,caolo[:,env_idx],W_core,core_vec_comp,core_vec,core_vec_comp,cloao_env_dm,cloao_1[:,:,env_idx,:][:,:,:,env_idx])
-        + einsum('uj,uv,k,nk,mj,vk,ns,Atms->At',
+        + einsum(f'uj,uv,{core_index},nk,mj,vk,ns,Atms->At',
                  I1,caolo[:,env_idx],W_core,core_vec_comp,core_vec,core_vec_comp,cloao_env_dm,cloao_1[:,:,env_idx,:][:,:,:,env_idx])
         + einsum('uj,Atuv,vj->At',I1,caolo_1,lo2core)
     )
@@ -256,9 +234,9 @@ def get_grad_I(mydmet_grad, I1, I2, caolo_1, cloao_1, S_1_mo, log):
     caolo_env = caolo[:,env_idx]
     cloao_env = cloao[env_idx,:]
     Y = (
-        + einsum('uj,k,mk,nj,vk,uv,ms,nl,si,lq->qi',
+        + einsum(f'uj,{core_index},mk,nj,vk,uv,ms,nl,si,lq->qi',
                   I1,W_core,core_vec_comp,core_vec,core_vec_comp,caolo_env,cloao_env,cloao_env,mo_coeff_occ,mo_coeff)
-        + einsum('uj,k,nk,mj,vk,uv,ms,nl,si,lq->qi',
+        + einsum(f'uj,{core_index},nk,mj,vk,uv,ms,nl,si,lq->qi',
                   I1,W_core,core_vec_comp,core_vec,core_vec_comp,caolo_env,cloao_env,cloao_env,mo_coeff_occ,mo_coeff)
         + einsum('uj,jk,mk,nj,vk,uv,ms,nl,si,lq->qi',
                   I2[:,nimp:],W_bath,orb_env,bath_vec,orb_env,caolo_env,cloao_env,cloao_env,mo_coeff_occ,mo_coeff)
@@ -340,6 +318,7 @@ def grad_elec(mydmet_grad, atmlst=None):
 
 from pyscf.grad.rhf import GradientsBase
 class AODMET_Gradients(GradientsBase):
+    _keys = set(GradientsBase._keys) | {'embedding_response'}
     def __init__(self, method):
         self.verbose = method.verbose
         self.stdout = method.stdout
@@ -350,6 +329,7 @@ class AODMET_Gradients(GradientsBase):
         self.solver_option = None
         self.es_ene = None
         self._krylov_conv_tol = 1e-7
+        self.embedding_response = 'legacy'
         self._perturb_anyway = False
         self._perturbation = 1e-10
 
